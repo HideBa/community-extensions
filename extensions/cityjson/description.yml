@@ -1,7 +1,7 @@
 extension:
   name: cityjson
-  description: Read, write, and query CityJSON, CityJSONSeq, FlatCityBuf, and CityParquet 3D city model files.
-  version: 0.4.0
+  description: Read, write, and query CityJSON, CityJSONSeq, FlatCityBuf, OBJ and CityParquet 3D city model files.
+  version: 0.5.0
   language: C++
   build: cmake
   license: MIT
@@ -10,7 +10,8 @@ extension:
 
 repo:
   github: cityjson/duckdb-cityjson
-  ref: a1455e1a0896160660f4646d240f2fb85be34617
+  ref: 8135345cf1cb288078942987225d5bc9e0c4d1ac
+  variegata: d5c5e554ef1d2eb3c499bc1e36765864b3e43523
 
 docs:
   hello_world: |
@@ -37,6 +38,11 @@ docs:
     -- Read material and texture definitions
     SELECT * FROM cityjson_materials('buildings.city.jsonl');
 
+    -- Read an OBJ mesh (it states no LoD or CRS, so you supply them) and write one
+    SELECT * FROM read_obj('buildings.obj', lod => '2.2');
+    COPY (SELECT * FROM read_cityjson('buildings.city.json'))
+      TO 'out.obj' (FORMAT obj, lod '2.2');
+
     -- Build a CityParquet package: a schema you can validate, mutate and write out
     CREATE SCHEMA city;
     CREATE TABLE city.building AS SELECT * FROM read_cityjson('buildings.city.json');
@@ -46,17 +52,19 @@ docs:
 
   extended_description: |
     The CityJSON extension provides table functions for reading and writing 3D city model files
-    in CityJSON (.city.json), CityJSONSeq (.city.jsonl), and FlatCityBuf (.fcb) formats, and for
-    building CityParquet packages. CityJSON is a JSON-based encoding for 3D city models
+    in CityJSON (.city.json), CityJSONSeq (.city.jsonl), FlatCityBuf (.fcb) and Wavefront OBJ
+    (.obj with its .mtl) formats, for writing glTF/GLB, and for building CityParquet packages.
+    CityJSON is a JSON-based encoding for 3D city models
     (buildings, terrain, vegetation, etc.) based on the CityGML data model.
 
     Reading and writing:
-    - `read_cityjson`, `read_cityjsonseq`, `read_flatcitybuf` — table functions for querying city objects
-    - `cityjson_metadata`, `cityjsonseq_metadata`, `flatcitybuf_metadata` — inspect file headers
-    - `COPY ... TO` with formats `cityjson`, `cityjsonseq`, and `flatcitybuf` — write query results
+    - `read_cityjson`, `read_cityjsonseq`, `read_flatcitybuf`, `read_obj` — table functions for querying city objects
+    - `cityjson_metadata`, `cityjsonseq_metadata`, `flatcitybuf_metadata`, `obj_metadata` — inspect file headers
+    - `COPY ... TO` with formats `cityjson`, `cityjsonseq`, `flatcitybuf`, `obj`, `gltf` and `glb` — write query results
 
     Appearance:
-    - `cityjson_materials`, `cityjson_textures`, `cityjson_geometry_templates` — sidecar readers
+    - `cityjson_materials`, `cityjson_textures`, `cityjson_geometry_templates`,
+      `cityjson_implicit_geometries`, `obj_materials`, `obj_textures` — sidecar readers
     - Per-LoD `material_lod*` / `texture_lod*` reference columns, or `appearance := 'sidecar'`
       to normalise appearance into sidecar tables with global ids and inlined UV coordinates
 

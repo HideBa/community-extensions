@@ -1,7 +1,7 @@
 extension:
   name: three_d
   description: 3D solid processing for city models — enclosed volume, validation, distance, and measurement of polyhedral solids.
-  version: 0.2.0
+  version: 0.3.0
   language: C++
   build: cmake
   license: MIT
@@ -11,7 +11,8 @@ extension:
 
 repo:
   github: cityjson/duckdb-3d
-  ref: 679ee0905cb75074e58d11c04fa690669441e6fd
+  ref: 9fdf17cdc191f3b3cf9c6e66f1bfa7bbfbafe5c4
+  variegata: bc478c0945e17837b251162bad51f3dd30905431
 
 docs:
   hello_world: |
@@ -53,20 +54,28 @@ docs:
     Function families (PostGIS-style names, a curated 3D subset). 3D operations use `ST_3D*`
     names so that `three_d` and DuckDB's `spatial` extension load together in any order; only
     the handful of names `spatial` does not define stay un-prefixed:
-    - Import / export: `ST_3DFromWKB`, `ST_3DTryFromWKB`, `ST_Geom3DFromWKB`, `ST_3DAsWKB`,
-      `ST_3DAsText`, `ST_3DAsGeoJSON`, `ST_3DAsBinary`
-    - Introspection: `ST_3DBounds`, `ST_3DNumSolids`, `ST_3DNumShells`, `ST_3DNumFaces`,
-      `ST_3DGeometryType`, `ST_3DDimension`, `ST_3DNumGeometries`, `ST_3DHasZ`, `ST_3DX`,
-      `ST_3DY`, `ST_3DZ`, `ST_3DZMin`, `ST_3DZMax`, `ST_NDims`, `ST_CoordDim`, `ST_IsPlanar`
-    - Validation: `ST_3DIsClosed`, `ST_3DIsManifold`, `ST_3DIsOriented`,
-      `ST_3DValidationReport`
+    - Import / export: `ST_3DFromWKB`, `ST_3DTryFromWKB`, `ST_Geom3DFromWKB`,
+      `ST_3DGeomFromText`, `ST_3DAsWKB`, `ST_3DAsText`, `ST_3DAsGeoJSON`, `ST_3DAsBinary`
+    - Introspection: `ST_3DBounds`, `ST_3DXMin` … `ST_3DZMax`, `ST_3DNumSolids`,
+      `ST_3DNumShells`, `ST_3DNumInteriorShells`, `ST_3DNumFaces`, `ST_3DGeometryType`,
+      `ST_3DDimension`, `ST_3DNumGeometries`, `ST_3DGeometryN`, `ST_3DExteriorShell`,
+      `ST_3DInteriorShellN`, `ST_3DHasZ`, `ST_3DX`, `ST_3DY`, `ST_3DZ`, `ST_NDims`,
+      `ST_CoordDim`, `ST_IsPlanar`
+    - Faces: `ST_3DFaces`, `ST_3DFaceN`, `ST_3DFaceAreas`, `ST_3DFaceNormals`,
+      `ST_3DFaceSlopes`, `ST_3DFaceAzimuths`
+    - Validation: `ST_3DIsValid`, `ST_3DIsClosed`, `ST_3DIsManifold`, `ST_3DIsOriented`,
+      `ST_3DValidationReport` (including a self-intersection check)
     - Measurement: `ST_3DVolume`, `ST_3DSurfaceArea` / `ST_3DArea`, `ST_3DFootprintArea`,
       `ST_3DPerimeter`, `ST_3DLength`
-    - Distance: `ST_3DDistance`, `ST_3DDWithin`, `ST_3DMaxDistance`, `ST_3DDFullyWithin`,
-      `ST_3DIntersects`, `ST_3DClosestPoint`, `ST_3DShortestLine`
+    - Distance and predicates: `ST_3DDistance`, `ST_3DDWithin`, `ST_3DMaxDistance`,
+      `ST_3DDFullyWithin`, `ST_3DIntersects`, `ST_3DDisjoint`, `ST_3DClosestPoint`,
+      `ST_3DShortestLine`
+    - Spatial indexing: `ST_3DEnvelope` (a 2D `GEOMETRY` footprint box for `spatial`'s joins
+      and R-tree) and the `ST_3DExtent` aggregate
+    - CRS: `ST_3DCRS`, `ST_3DSetCRS`, `ST_3DSRID`, `ST_3DTransform`
     - Transform / construct: `ST_3DTranslate`, `ST_3DScale`, `ST_3DRotateX`, `ST_3DRotateY`,
-      `ST_3DRotateZ`, `ST_3DTransform`, `ST_Force3D`, `ST_3DConvexHull`, `ST_3DCentroid`,
-      `ST_3DExtrude`, `ST_MakeSolid`
+      `ST_3DRotateZ`, `ST_Force3D`, `ST_3DConvexHull`, `ST_3DFootprintHull`, `ST_3DCentroid`,
+      `ST_3DExtrude`, `ST_MakeSolid`, `ST_3DPlaceImplicit` (CityJSON implicit geometries)
 
     Geometry is never silently repaired: validity is reported, and functions with a
     precondition raise instead of guessing. `ST_3DValidationReport` returns the counts
